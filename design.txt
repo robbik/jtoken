@@ -1,0 +1,191 @@
+[GENERAL]
+1. Data is transmitted using TCP/IP protocol secured by SSL/VPN/IPSec
+2. No unencrypted data transmission is allowed
+3. Each issued key is valid only for 3 years
+4. Time synchronization (using NTP packet) is done via HTTP request (RESTful web service) targetting web server not app server
+
+[WEB: USER REGISTRATION]
+1. Guest click 'Sign up' hyperlink, redirected to signup page
+2. Guest fills up user registration form (at least: username, e-mail, password), do captcha, clicking on 'i agree' checkbox, and submitting to web server
+3. Web server process user registration, deactivate user, sends e-mail registration confirmation to guest e-mail, and replies request with notification page
+4. Guest checks his/her e-mail and clicking hyperlink provided in the e-mail to continue registration
+5. Guest opens registration confirmation, do captcha, and submitting to web server
+6. Web server activates user, send e-mail notification of registration successful, and replies request with final notification page
+
+[WEB: AGENT REGISTRATION]
+1. Guest click 'Sign up' hyperlink, redirected to signup page
+2. Guest fills up agent registration form (at least: username, e-mail, password), do captcha, clicking on 'i agree' checkbox, and submitting to web server
+3. Web server process agent registration, deactivate agent, sends e-mail registration confirmation to guest e-mail, and replies request with notification page
+4. Guest checks his/her e-mail and clicking hyperlink provided in the e-mail to continue registration
+5. Guest opens registration confirmation, do captcha, and submitting to web server
+6. Web server activates agent, send e-mail notification of registration successful, and replies request with final notification page
+
+[WEB: USER/AGENT TOKEN APPS DOWNLOAD]
+1. Guest logins into web server
+2. User/agent opens download page and click on download button
+3. Web server gives generated token app
+
+[WEB: USER/AGENT TOKEN RENEWAL]
+1. Guest logins into web server
+2. User/agent opens token renewal, enters password, enters token code, does captcha, and submitting to web server
+3. Web server verifies user/agent password and token code
+4. Web server re-generates key and store it to database
+5. Web server re-generates token app for the user/agent
+6. Web server replies with success notification page and instructs user/agent to re-download token apps &/ token library
+
+[WEB: AGENT TOKEN LIBRARY DOWNLOAD]
+1. Guest logins into web server
+2. Agent opens download page and click on download button
+3. Web server gives generated library app
+
+[WEB: AGENT LINKS USER]
+1. Guest logins into web server
+2. Agent opens linked users page and clicks on 'link user' menu
+3. Agent opens link user page, fills up username, does captcha, and enters token code
+4. Web server validates capctcha, token code, and username
+5. Web server sends e-mail confirmation to specified user
+6. Web server displays notification page to agent
+7. Guest opens confirmation e-mail and clicks the given hyperlink
+8. Guest logins into web server
+9. User enters token code
+10. Web server validates token code and stores the link to database
+11. Web server sends e-mail notification to user and agent
+
+[GENERAL: PASSWORD, STORE]
+1. user password is stored in database as sha256(passwd) form
+
+[GENERAL: KEY, GENERATION]
+1. key = securely pseudo random 60 bytes
+
+[GENERAL: KEY, STORE]
+1. enckey = hmac_md5(key, passwd) concatenated with aes256enc(key, passwd)
+2. aenckey = base64(enckey)
+3. aenckey can be stored to database
+
+[GENERAL: KEY, LOAD]
+1. aenckey loaded from database
+2. enckey = base64rev(aenckey)
+3. key = aes256dec(enckey[1], passwd)
+4. mac = hmac_md5(key, passwd)
+5. assert mac = enckey[0]
+6. mac disposed
+7. key can be used
+
+[APP: NETWORK PACKET FORMAT]
++------------------+------+-------------------+----------+--------+
+| Frame Length (N) | Type |  Processing Code  | Trace #  |  Data  |
++------------------+------+-------------------+----------+--------+
+        6              2           10               15      N-27
+
+Details:
+- Frame Lengh
+  Numeric formatted in UTF7 (align: right, padded with zero '0'), ex. 007765
+
+- Type
+  Possible values are:
+  - RQ: indicates request packet
+  - RS: indicates response packet
+
+- Processing Code
+  Alpha/numeric/symbol formatted in UTF7 (align: left, padded with space), ex. SIGN_ON
+
+- Trace #
+  a. Numeric formatted in UTF7 (align: right, padded with zero '0'), ex. 000000000000023
+  b. Must unique per request packet in the same business day in the same 'session'
+  c. Response packet must has same trace # with its response
+
+- Data
+  Packet data, may differs per processing code and type
+
+[RQ|SIGN_ON]
+Establish a 'session' between client and server
+
++---------------------------------------------------+-------+
+| Authorizing Agent Institution Identification Code | Token |
++---------------------------------------------------+-------+
+                    ...120                              64
+
+Details:
+- Institution Identification Code
+  Code given to each institution, usually called 'username' or 'user-id'.
+
+- Token
+  Binary token generated by token client library and key downloaded from the website. The token is generated using parameters:
+  - algorithm: HMAC-SHA512
+  - digits: 64
+
+[RS|SIGN_ON]
++---------------+
+| Response Code |
++---------------+
+        4
+
+Details:
+- Response code
+  4 bytes numeric code
+
+[RQ|SIGN_OFF]
++---------------------------------------------------+-------+
+| Authorizing Agent Institution Identification Code | Token |
++---------------------------------------------------+-------+
+                    ...120                              64
+
+Details:
+- Institution Identification Code
+  Code given to each institution, usually called 'username' or 'user-id'.
+
+- Token
+  Binary token generated by token client library and key downloaded from the website. The token is generated using parameters:
+  - algorithm: HMAC-SHA512
+  - digits: 64
+
+[RS|SIGN_OFF]
++---------------+
+| Response Code |
++---------------+
+        4
+
+Details:
+- Response code
+  4 bytes numeric code
+
+[RQ|VERIFY]
++---------------------------------------------------+--------------------------+------------------+-----------+-------+
+| Authorizing Agent Institution Identification Code | User Identification Code | Token Value Type | Challenge | Token |
++---------------------------------------------------+--------------------------+------------------+-----------+-------+
+                    ...120                                    ...120                     2            ..99      ..60
+
+Details:
+- Institution Identification Code
+  Code given to each institution, usually called 'username' or 'user-id'.
+
+- User Identification Code
+  Code given to user to be verified, usually called 'username' or 'user-id'.
+
+- Token Value Type
+  Type of token value. Possible values are:
+  - N.: numeric-only
+  - A.: alphanumeric
+  - B.: binary
+  - .1: challenged token
+  - .2: un-challenged token
+
+  ex. N1 means challenged token, in numeric-only format
+
+- Challenge
+  Up to 99 bytes of challenge in literal binary format.
+
+- Token
+  Token value generated by user token device downloaded from the website. 
+
+
+[RS|VERIFY]
++---------------+
+| Response Code |
++---------------+
+        4
+
+Details:
+- Response code
+  4 bytes numeric code
+
