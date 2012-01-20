@@ -1,4 +1,4 @@
-package jtoken.core.internal;
+package jtoken.core.util;
 
 import jtoken.core.ntp.Timestamp;
 

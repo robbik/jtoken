@@ -27,10 +27,15 @@
 
 [WEB: USER/AGENT TOKEN RENEWAL]
 1. Guest logins into web server
-2. User/agent opens token renewal, enters password, enters token code, does captcha, and submitting to web server
+2. User/agent opens token renewal, enters:
+   - password
+   - token code
+   - IMEI/IMSI/MEID/HWID (device id)
+   - captcha,
+   and submitting to web server
 3. Web server verifies user/agent password and token code
 4. Web server re-generates key and store it to database
-5. Web server re-generates token app for the user/agent
+5. Web server re-generates token app (key is embedded in the app) for the user/agent. Embedded key is protected/encrypted with password and device id
 6. Web server replies with success notification page and instructs user/agent to re-download token apps &/ token library
 
 [WEB: AGENT TOKEN LIBRARY DOWNLOAD]
@@ -70,6 +75,17 @@
 5. assert mac = enckey[0]
 6. mac disposed
 7. key can be used
+
+[DEVICE:KEY, LOAD]
+1. Retrieve password from user
+2. Retrieve device id from device
+3. Load encrypted embedded key from application resource to application memory
+4. Decrypt it using pasword and device id
+
+[DEVICE: Get device id]
+1. Retrieve IMEI/MEID from device
+2. Retrieve MAC-Address from device
+3. Retrieve Bluetooth serial number from device
 
 [APP: NETWORK PACKET FORMAT]
 +------------------+------+-------------------+----------+--------+

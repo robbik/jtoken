@@ -1,9 +1,23 @@
-package jtoken.core.internal;
+package jtoken.core.util;
 
 public abstract class AlphaNumericUtils {
 
-	private static final char[] AN = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01"
+	private static final char[] AN64 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+."
 			.toCharArray();
+
+	private static final char[] AN32 = "0123456789abcdefghijklmnpqrstuvwxyz"
+			.toCharArray();
+
+	public static int ceildiv16(int a) {
+		int val = a >> 4;
+		int rem = a & 0x0F;
+
+		if (rem > 0) {
+			return val + 1;
+		} else {
+			return val;
+		}
+	}
 
 	public static byte[] numericToBytes(long value) {
 		byte[] b = new byte[8];
@@ -32,23 +46,30 @@ public abstract class AlphaNumericUtils {
 					| ((long) (b[start + 6] & 0xFF) << 8)
 					| (long) (b[start + 7] & 0xFF);
 		}
-		
+
 		long value = 0;
 		for (int i = len - 1; i >= start; --i) {
 			value = (value << 8) | (long) (b[i] & 0xFF);
 		}
-		
+
 		return value;
 	}
 	
-
 	public static String bytesToString32(byte[] bytes) {
-		int i = 0, index = 0, digit = 0;
+		return bytesToString32(bytes, 0, bytes.length);
+	}
+
+	public static String bytesToString32(byte[] bytes, int offset, int length) {
+		if (length + offset > bytes.length) {
+			length = bytes.length - offset;
+		}
+
+		int i = offset, index = 0, digit = 0;
 		int currByte, nextByte;
 
-		StringBuffer base32 = new StringBuffer((bytes.length + 7) * 8 / 5);
+		StringBuffer base32 = new StringBuffer((length + 7) * 8 / 5);
 
-		while (i < bytes.length) {
+		while (i < length) {
 			currByte = (bytes[i] >= 0) ? bytes[i] : (bytes[i] + 256); // unsign
 
 			/* Is the current digit going to span a byte boundary? */
@@ -74,7 +95,7 @@ public abstract class AlphaNumericUtils {
 				}
 			}
 
-			base32.append(AN[digit]);
+			base32.append(AN32[digit]);
 		}
 
 		return base32.toString();
@@ -92,7 +113,7 @@ public abstract class AlphaNumericUtils {
 		int i = offset;
 		int end = offset + length;
 		int op = 0;
-		
+
 		if (end > bytes.length) {
 			end = bytes.length;
 		}
@@ -106,16 +127,16 @@ public abstract class AlphaNumericUtils {
 			int o2 = ((i1 & 0xf) << 2) | (i2 >>> 6);
 			int o3 = i2 & 0x3F;
 
-			out[op++] = AN[o0];
-			out[op++] = AN[o1];
+			out[op++] = AN64[o0];
+			out[op++] = AN64[o1];
 
 			if (op < oDataLen) {
-				out[op] = AN[o2];
+				out[op] = AN64[o2];
 				++op;
 			}
 
 			if (op < oDataLen) {
-				out[op] = AN[o3];
+				out[op] = AN64[o3];
 				++op;
 			}
 		}

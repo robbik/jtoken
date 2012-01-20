@@ -2,18 +2,19 @@ package jtoken.core.totp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import jtoken.core.internal.AlphaNumericUtils;
+import jtoken.core.totp.Totp;
+import jtoken.core.util.HexUtils;
 
 import org.junit.Test;
 
-public class TOTPTest {
+public class TotpTest {
 
 	@Test
 	public void generateNumericTest() throws Exception {
 		long window = 3000;
 
-		TOTP totp = new TOTP(TOTP.ALGORITHM_HMAC_SHA256,
-				"abcdefghijklmnopqrst".getBytes(), 0, window);
+		Totp totp = new Totp("abcdefghijklmnopqrstuvwxyz012345".getBytes(), 0,
+				window, true);
 
 		String token1 = totp.generateNumeric(System.currentTimeMillis(), 8);
 		assertEquals(token1.length(), 8);
@@ -35,18 +36,16 @@ public class TOTPTest {
 	public void generateAlphaNumericTest() throws Exception {
 		long window = 1000;
 
-		TOTP totp = new TOTP(TOTP.ALGORITHM_HMAC_SHA256,
-				"abcdefghijklmnopqrst".getBytes(), 0, window);
+		Totp totp = new Totp("abcdefghijklmnopqrstuvwxyz012345".getBytes(), 0,
+				window, true);
 
-		String token1 = totp
-				.generateAlphaNumeric(System.currentTimeMillis(), 8);
-		assertEquals(token1.length(), 8);
+		String token1 = totp.generateAlphaNumeric(System.currentTimeMillis(),
+				25);
 
 		Thread.sleep(window + 100);
 
-		String token2 = totp
-				.generateAlphaNumeric(System.currentTimeMillis(), 8);
-		assertEquals(token2.length(), 8);
+		String token2 = totp.generateAlphaNumeric(System.currentTimeMillis(),
+				25);
 
 		if (token1.equals(token2)) {
 			fail("token1 equals with token2, value is " + token1);
@@ -54,25 +53,28 @@ public class TOTPTest {
 
 		System.out.println("[generateAlphaNumericTest] token1=" + token1
 				+ "; token2=" + token2);
+
+		assertEquals(25, token1.length());
+		assertEquals(25, token2.length());
 	}
 
 	@Test
 	public void generateBinaryTest() throws Exception {
 		long window = 1000;
 
-		TOTP totp = new TOTP(TOTP.ALGORITHM_HMAC_SHA256,
-				"abcdefghijklmnopqrst".getBytes(), 0, window);
+		Totp totp = new Totp("abcdefghijklmnopqrstuvwxyz012345".getBytes(), 0,
+				window, true);
 
-		byte[] token1 = totp.generateBinary(System.currentTimeMillis(), 8);
-		assertEquals(token1.length, 8);
+		byte[] token1 = totp.generateBinary(System.currentTimeMillis(), 16);
+		assertEquals(token1.length, 16);
 
 		Thread.sleep(window + 100);
 
-		byte[] token2 = totp.generateBinary(System.currentTimeMillis(), 8);
-		assertEquals(token2.length, 8);
+		byte[] token2 = totp.generateBinary(System.currentTimeMillis(), 16);
+		assertEquals(token2.length, 16);
 
-		String stoken1 = AlphaNumericUtils.bytesToString64(token1);
-		String stoken2 = AlphaNumericUtils.bytesToString64(token2);
+		String stoken1 = HexUtils.bytesToHex(token1);
+		String stoken2 = HexUtils.bytesToHex(token2);
 
 		if (stoken1.equals(stoken2)) {
 			fail("token1 equals with token2");

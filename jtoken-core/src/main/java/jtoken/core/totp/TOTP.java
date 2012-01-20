@@ -4,28 +4,17 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import jtoken.core.util.AlphaNumericUtils;
 
-import jtoken.core.internal.AlphaNumericUtils;
-
-public class TOTP {
-
-	public static final String ALGORITHM_HMAC_MD5 = "HmacMD5";
-
-	public static final String ALGORITHM_HMAC_SHA1 = "HmacSHA1";
-
-	public static final String ALGORITHM_HMAC_SHA244 = "HmacSHA244";
-
-	public static final String ALGORITHM_HMAC_SHA256 = "HmacSHA256";
-
-	public static final String ALGORITHM_HMAC_SHA512 = "HmacSHA512";
+public class Totp {
 
 	private static final int MAX_NUMERIC_DIGITS = 15;
 
-	private static final int MAX_ALPHANUMERIC_DIGITS = 128;
+	private static final int MAX_NUMERIC_OFFSET = 7;
 
-	private static final int MAX_BINARY_DIGITS = 60;
+	private static final int MAX_ALPHANUMERIC_DIGITS = 25;
+
+	private static final int MAX_BINARY_DIGITS = 16;
 
 	private static final int MAX_CHALLENGE_LENGTH = 99;
 
@@ -56,33 +45,15 @@ public class TOTP {
 		ALPHANUMERIC_PADDER = new String(cbuf);
 	}
 
-	private final String algorithm;
+	private final MacAES mac;
 
-	private final byte[] key;
-
-	private final long t0;
+	private long t0;
 
 	private final long window;
 
-	public TOTP(String algorithm, byte[] key, long t0, long window) {
-		Mac hmac;
-
-		try {
-			hmac = Mac.getInstance(algorithm);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalArgumentException("algorithm " + algorithm
-					+ " is not supported", e);
-		}
-
-		this.algorithm = algorithm;
-
-		try {
-			hmac.init(new SecretKeySpec(key, "RAW"));
-		} catch (InvalidKeyException e) {
-			throw new IllegalArgumentException("key is not valid", e);
-		}
-
-		this.key = (byte[]) key.clone();
+	public Totp(byte[] key, long t0, long window, boolean wipe) {
+		mac = new MacAES();
+		mac.init(key, false);
 
 		if (t0 < 0) {
 			throw new IllegalArgumentException(
@@ -96,8 +67,17 @@ public class TOTP {
 		}
 
 		this.window = window;
+
+		if (wipe) {
+			Arrays.fill(key, (byte) 0);
+		}
 	}
 
+	@Override
+	protected void finalize() {
+		destroy();
+	}
+	
 	private byte[] generate(long time, int digits, byte[] challenge,
 			int maxDigits) throws NoSuchAlgorithmException, InvalidKeyException {
 
@@ -133,10 +113,11 @@ public class TOTP {
 			System.arraycopy(challenge, 0, t, 8, challengeLength);
 		}
 
-		Mac hmac = Mac.getInstance(algorithm);
-		hmac.init(new SecretKeySpec(key, "RAW"));
-
-		return hmac.doFinal(t);
+		return mac.doFinal(t);
+	}
+	
+	public void adjustT0(long delta) {
+		t0 += delta;
 	}
 
 	public String generateNumeric(long time, int digits, byte[] challenge) {
@@ -150,7 +131,14 @@ public class TOTP {
 			throw new RuntimeException("state is not consistent", e);
 		}
 
-		int offset = hash[hash.length - 1] & 0x0F;
+		int hlen = hash.length;
+		int offset;
+
+		if (hlen == digits) {
+			offset = 0;
+		} else {
+			offset = hash[hlen - 1] & MAX_NUMERIC_OFFSET;
+		}
 
 		long otp = AlphaNumericUtils.bytesToLong(hash, offset)
 				% DIGITS_POWER[digits];
@@ -180,9 +168,17 @@ public class TOTP {
 			throw new RuntimeException("state is not consistent", e);
 		}
 
-		int offset = hash[hash.length - 1] & 0x0F;
-		String result = AlphaNumericUtils.bytesToString64(hash, offset,
-				hash.length);
+		int hlen = hash.length, bdigits = ((digits * 5) + 7) / 8;
+		int boffset;
+
+		if (hlen == bdigits) {
+			boffset = 0;
+		} else {
+			boffset = hash[hlen - 1] & (hlen - bdigits);
+		}
+
+		String result = AlphaNumericUtils.bytesToString32(hash, boffset,
+				bdigits);
 
 		int len = result.length();
 		if (len > digits) {
@@ -211,18 +207,15 @@ public class TOTP {
 			throw new RuntimeException("state is not consistent", e);
 		}
 
-		int len = hash.length;
-		int offset = hash[len - 1] & 0x0F;
+		int hlen = hash.length;
+		if (hlen == digits) {
+			return hash;
+		}
+
+		int offset = hash[hlen - 1] & (hlen - digits);
 
 		byte[] result = new byte[digits];
-		if (digits + offset <= len) {
-			System.arraycopy(hash, offset, result, 0, digits);
-		} else {
-			int diff = (digits + offset) - len;
-
-			Arrays.fill(result, 0, diff, (byte) 0);
-			System.arraycopy(hash, offset, result, 0, digits - diff);
-		}
+		System.arraycopy(hash, offset, result, 0, digits);
 
 		return result;
 	}
@@ -232,6 +225,6 @@ public class TOTP {
 	}
 
 	public void destroy() {
-		Arrays.fill(key, (byte) 0);
+		mac.destroy();
 	}
 }

@@ -5,7 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import jtoken.core.internal.NtpUtils;
+import jtoken.core.util.NtpUtils;
 
 public class NtpPacket implements Serializable {
 

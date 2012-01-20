@@ -6,6 +6,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import jtoken.core.ntp.NtpConstants;
+import jtoken.core.ntp.NtpPacket;
+import jtoken.core.ntp.NtpTime;
+import jtoken.core.ntp.Timestamp;
+
 import org.junit.Test;
 
 public class NtpPacketTest {
