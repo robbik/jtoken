@@ -151,4 +151,8 @@ public class Timestamp {
 	public static Timestamp currentTimestamp() {
 		return new Timestamp(dateToNtp(System.currentTimeMillis()));
 	}
+	
+	public static Timestamp valueOf(long date) {
+		return new Timestamp(dateToNtp(date));
+	}
 }

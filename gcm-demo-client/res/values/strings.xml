@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, Main!</string>
+    
+    <string name="app_name">GCM Demo</string>
+    <string name="auth_failed">Invalid username or password</string>
+    <string name="connection_error">Unable to connect to server (Error %1$s)</string>
+    <string name="btn_signin">Sign In</string>
+    <string name="btn_signup">Sign Up</string>
+    <string name="signing_in">Signing in</string>
+</resources>

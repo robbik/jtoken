@@ -1,0 +1,63 @@
+<resources>
+    <string name="application_name">Android Token</string>
+    
+    <string name="account_already_exists">Account already exists</string>
+    
+    <string name="account_label">Android Token</string>
+    
+    <string name="sign_up">Sign Up Android Token</string>
+    <string name="change_pin">Change PIN</string>
+    
+    <string name="pre_add_account_body">
+        You can use more than one Token Account on your phone but you can\'t use a Token account on more than one phone.
+        Adding a Token Account takes just a few steps.
+    </string>
+    
+    <string name="pre_add_account_prompt">
+        Touch "Next" to continue or press your phone\'s Back button to exit.
+    </string>
+    
+    <string name="add_account_prompt_signup">Don\'t have a Token Account?</string>
+    <string name="add_account_prompt_signin">Already have a Token Account?</string>
+    
+    <string name="signin_prompt">Sign in with your Token Account:</string>
+    
+    <string name="pin_prompt">Please enter your PIN:</string>
+    <string name="new_pin_prompt">Please enter your new PIN:</string>
+    
+    <string name="create_in_progress">Signing up account\u2026</string>
+
+    <string name="email">E-mail address</string>
+    <string name="pin">PIN</string>
+    <string name="new_pin">New PIN</string>
+    <string name="reenter_new_pin">Re-enter new PIN</string>
+    
+    <string name="unlocking_seed">Unlocking seed\u2026</string>
+    <string name="changing_pin">Changing account password\u2026</string>
+    
+    <string name="btn_back">Back</string>
+    <string name="btn_next">Next</string>
+    
+    <string name="btn_signin">Sign in</string>
+    <string name="btn_signup">Sign up</string>
+    <string name="btn_change">Change</string>
+    
+    <string name="field_cannot_be_blank">This field cannot be blank</string>
+    <string name="pin_not_equals">PIN not equals</string>
+    
+    <string name="unable_to_connect">Unable to connect to server</string>
+    <string name="unable_to_add_account">Unable to add new account</string>
+    
+    <string name="invalid_pin">Invalid PIN</string>
+    
+    <string name="incompatible">Android Token is not compatible with %1$s</string>
+    <string name="sync_required">Sync required</string>
+    
+    <string name="a1_message">
+        Following application is requesting TOKEN APPL1:&lt;br/&gt;
+        &lt;br/&gt;
+        &lt;center&gt;%1$s&lt;center/&gt;
+        &lt;br/&gt;
+        Allowed ?
+    </string>
+</resources>

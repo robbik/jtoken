@@ -55,17 +55,17 @@ public final class NtpTime {
 		return s.concat("]");
 	}
 
-	private void compute(NtpPacket packet, long returnTime) {
-		Timestamp origNtpTime = packet.getOriginateTime();
-		long origTime = origNtpTime.timeInMillisValue();
+	private void compute(NtpPacket packet, long t4) {
+		Timestamp time1 = packet.getOriginateTime();
+		long t1 = time1.timeInMillisValue();
 
 		// Receive Time is time request received by server (t2)
-		Timestamp rcvNtpTime = packet.getReceiveTime();
-		long rcvTime = rcvNtpTime.timeInMillisValue();
+		Timestamp time2 = packet.getReceiveTime();
+		long t2 = time2.timeInMillisValue();
 
 		// Transmit time is time reply sent by server (t3)
-		Timestamp xmitNtpTime = packet.getTransmitTime();
-		long xmitTime = xmitNtpTime.timeInMillisValue();
+		Timestamp time3 = packet.getTransmitTime();
+		long t3 = time3.timeInMillisValue();
 
 		delayIsSet = false;
 		offsetIsSet = false;
@@ -86,25 +86,25 @@ public final class NtpTime {
 		 * Note the typo in SNTP RFCs 1769/2030 which state that the delay is
 		 * (T4 - T1) - (T2 - T3) with the "T2" and "T3" switched.
 		 */
-		if (origNtpTime.ntpValue() == 0) {
+		if (time1.ntpValue() == 0) {
 			// without originate time cannot determine when packet went out
 			// might be via a broadcast NTP packet...
-			if (xmitNtpTime.ntpValue() != 0) {
-				offset = xmitTime - returnTime;
+			if (time3.ntpValue() != 0) {
+				offset = t3 - t4;
 				offsetIsSet = true;
 			}
 			// else, ERROR: cannot compute delay/offset
-		} else if ((rcvNtpTime.ntpValue() == 0)
-				|| (xmitNtpTime.ntpValue() == 0)) {
+		} else if ((time2.ntpValue() == 0)
+				|| (time3.ntpValue() == 0)) {
 
-			if (returnTime < origTime) {
+			if (t4 < t1) {
 				throw new AssertionError("return-time < originate-time");
 			}
 
 			// without receive or xmit time cannot figure out processing
 			// time
 			// so delay is simply the network travel time
-			delay = returnTime - origTime;
+			delay = t4 - t1;
 			delayIsSet = true;
 
 			// TODO: is offset still valid if rcvNtpTime=0 || xmitNtpTime=0 ???
@@ -113,50 +113,50 @@ public final class NtpTime {
 			// then it's an malformed ntp host anyway and we don't care?
 			// If server is in broadcast mode then we never send out a query in
 			// first place...
-			if (rcvNtpTime.ntpValue() != 0) {
+			if (time2.ntpValue() != 0) {
 				// xmitTime is 0 just use rcv time
-				offset = rcvTime - origTime;
-			} else if (xmitNtpTime.ntpValue() != 0) {
+				offset = t2 - t1;
+			} else if (time3.ntpValue() != 0) {
 				// rcvTime is 0 just use xmitTime time
-				offset = xmitTime - returnTime;
+				offset = t3 - t4;
 			}
 
 			offsetIsSet = true;
 		} else {
 			// assert xmitTime >= rcvTime: difference typically < 1ms
-			if (xmitTime < rcvTime) {
+			if (t3 < t2) {
 				throw new AssertionError(
 						"malformed NTP packet, transmit-time < receive-time");
 			}
 
 			// assert returnTime >= origTime: network delay could not be
 			// negative
-			if (returnTime < origTime) {
+			if (t4 < t1) {
 				throw new AssertionError("return-time < originate-time");
 			}
 
-			long delay = returnTime - origTime;
+			long troundtrip = t4 - t1;
 
 			// subtract processing time from round-trip network delay
-			long delta = xmitTime - rcvTime;
+			long tprocessing = t3 - t2;
 
 			// in normal cases the processing delta is less than
 			// the total roundtrip network travel time.
-			if (delta <= delay) {
-				delay -= delta; // delay = (t4 - t1) - (t3 - t2)
+			if (tprocessing <= troundtrip) {
+				troundtrip -= tprocessing; // delay = (t4 - t1) - (t3 - t2)
 			} else {
 				// if delta - delayValue == 1 ms then it's a round-off error
 				// e.g. delay=3ms, processing=4ms
-				if (delta - delay == 1) {
+				if (tprocessing - troundtrip == 1) {
 					// delayValue == 0 -> local clock saw no tick change but
 					// destination clock did
-					if (delay != 0) {
-						delay = 0;
+					if (troundtrip != 0) {
+						troundtrip = 0;
 					}
 				}
 			}
 
-			offset = ((rcvTime - origTime) + (xmitTime - returnTime)) / 2;
+			offset = ((t2 - t1) + (t3 - t4) - troundtrip) / 2;
 
 			delayIsSet = true;
 			offsetIsSet = true;

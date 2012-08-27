@@ -1,0 +1,8 @@
+<account-authenticator
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accountType="com.robbi.android.token"
+    android:icon="@drawable/icon"
+    android:smallIcon="@drawable/icon"
+    android:label="@string/application_name">
+
+</account-authenticator>

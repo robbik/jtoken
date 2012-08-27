@@ -1,7 +1,6 @@
 target
 bin
+gen
 temp
-.classpath
-.project
 .settings
 

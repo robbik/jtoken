@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <mvc:annotation-driven />
+    
+    <!-- http message converters -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <array value-type="org.springframework.http.converter.HttpMessageConverter">
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter"
+                      p:writeAcceptCharset="false" />
+
+                <bean class="org.springframework.http.converter.FormHttpMessageConverter" />
+
+                <bean class="org.springframework.http.converter.xml.XmlAwareFormHttpMessageConverter" />
+
+                <!-- uncomment this to support XML converter
+                <bean class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter"
+                      p:marshaller-ref="xmlMarshaller"
+                      p:unmarshaller-ref="xmlMarshaller"
+                      p:supportedMediaTypes="application/xml, text/xml" />
+                -->
+
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"
+                      p:prefixJson="false"
+                      p:supportedMediaTypes="application/json" />
+            </array>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <property name="favorPathExtension" value="true" />
+        <property name="ignoreAcceptHeader" value="true" />
+        <property name="useNotAcceptableStatusCode" value="true" />
+
+        <property name="mediaTypes">
+            <map>
+                <entry key="html" value="text/html"/>
+                <entry key="json" value="application/json"/>
+                <entry key="xml" value="text/xml"/>
+            </map>
+        </property>
+
+        <property name="viewResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+
+                <ref bean="jspView"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="jspView" class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          p:viewClass="org.springframework.web.servlet.view.JstlView"
+          p:prefix="/WEB-INF/jsp/"
+          p:suffix=".jsp"
+          p:contentType="text/html" />
+
+    <!-- cache control -->
+    <mvc:interceptors>
+        <bean id="webContentInterceptor" class="org.springframework.web.servlet.mvc.WebContentInterceptor"
+              p:useExpiresHeader="true"
+              p:useCacheControlHeader="true"
+              p:useCacheControlNoStore="true"
+              p:cacheSeconds="0">
+
+            <property name="cacheMappings">
+                <props />
+            </property>
+        </bean>
+    </mvc:interceptors>
+
+    <context:component-scan base-package="rk.experiment.c2dm.controller" />
+</beans>
+

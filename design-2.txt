@@ -1,0 +1,39 @@
+[definition]
+1. instance
+   an instance stands for a token verification agent. An agent can verify token for every user that has linked to.
+
+[dashboard]
+1. token verifications per second / Tvps (historical graph and report)
+
+[remote administration]
+1. start/stop instance
+
+[pricing]
+1. pay as you go
+   - number of token verifications
+
+   - tvps limit
+
+2. instance types
+   - micro: (Free)
+   - small
+   - standard
+   - large
+
+[instance types]
+1. Micro
+   - Maximum tvps is , allowing more than it every  minute
+   - Maximum number of token verifications per month is -- 2,700,000
+
+2. Small
+   - Maximum tvps is 
+   - Maximum number of token verifications per month is -- 10,800,000
+
+3. Standard
+   - Maximum tvps is 
+   - Maximum number of token verifications per month is -- 27,000,000
+
+4. Large
+   - Maximum tvps is 
+   - Maximum number of token verifications per month is -- 67,500,000
+

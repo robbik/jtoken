@@ -1,0 +1,76 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.robbi.android.token"
+    android:versionCode="1"
+    android:versionName="1.0">
+	
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="15" />
+    
+    <permission
+        android:name="com.robbi.android.token.permission.TOKEN"
+        android:protectionLevel="normal" />
+    
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+    
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <application
+        android:name=".App"
+        android:label="@string/application_name"
+        android:icon="@drawable/icon"
+        android:theme="@android:style/Theme.Light">
+        
+        <!-- Account -->
+        <activity
+            android:name="com.robbi.android.token.account.AccountSetupActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:excludeFromRecents="true" />
+        
+        <activity
+            android:name=".account.PINPromptActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:excludeFromRecents="true" />
+        
+        <activity
+            android:name="com.robbi.android.token.account.AccountCreateActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:excludeFromRecents="true" />
+        
+        <activity
+            android:name=".account.ChangePINActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:excludeFromRecents="true" />
+        
+        <!-- SYNC -->
+        <receiver android:name=".sync.SyncBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        
+        <service android:name="com.robbi.android.token.syncadapter.SyncIntentService" />
+        
+        <!-- TOTP -->
+        <service
+            android:name=".totp.A1IntentService"
+            android:exported="true"
+            android:permission="com.robbi.android.token.permission.TOKEN">
+            
+            <intent-filter>
+                <action android:name="com.robbi.android.token.intent.REQUEST_APPL1" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="com.robbi.android.totp.A1Dialog"
+            android:theme="@android:style/Theme.Translucent"
+            android:excludeFromRecents="true" />
+        
+        </application>
+</manifest>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                                 http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/security 
+                                 http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <!-- security filter chain -->
+    <http pattern="/login.html*" security="none" />
+    
+    <http use-expressions="true">
+        <access-denied-handler error-page="/login.html?reason=denied" />
+
+        <intercept-url pattern="/**" access="isAuthenticated()" />
+
+        <form-login login-page="/login.html"
+                    default-target-url="/"
+                    always-use-default-target="true"
+                    login-processing-url="/login.j"
+                    authentication-failure-url="/login.html?reason=auth" />
+
+        <logout invalidate-session="true"
+                logout-success-url="/"
+                logout-url="/logout.j"
+                delete-cookies="JSESSIONID" />
+
+        <session-management invalid-session-url="/login.html"
+                            session-fixation-protection="newSession">
+
+            <concurrency-control max-sessions="1"
+                                 error-if-maximum-exceeded="true"
+                                 expired-url="/login.html?reason=expired" />
+        </session-management>
+    </http>
+
+    <!-- authentication manager -->
+    <authentication-manager>
+        <authentication-provider>
+            <user-service>
+                <user name="test1" password="test" authorities="ROLE_USER" />
+                <user name="test2" password="test" authorities="ROLE_USER" />
+                <user name="test3" password="test" authorities="ROLE_USER" />
+                <user name="test4" password="test" authorities="ROLE_USER" />
+                <user name="test5" password="test" authorities="ROLE_USER" />
+                <user name="test6" password="test" authorities="ROLE_USER" />
+                <user name="test7" password="test" authorities="ROLE_USER" />
+                <user name="test8" password="test" authorities="ROLE_USER" />
+                <user name="test9" password="test" authorities="ROLE_USER" />
+                <user name="test10" password="test" authorities="ROLE_USER" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>
+</beans:beans>
